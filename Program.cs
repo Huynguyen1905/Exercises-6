@@ -4,123 +4,106 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ConsoleApp5
+namespace ConsoleApp4
 {
     internal class Program
     {
-            struct Member
-            {
-                public int ID;
-                public string Name;
-                public int Tasks;
+        static void Main(string[] args)
+        {
+                // Part 1: Create jagged array with given values
+                int[][] jagged1 = new int[4][];
+                jagged1[0] = new int[] { 1, 1, 1, 1, 1 };
+                jagged1[1] = new int[] { 2, 2 };
+                jagged1[2] = new int[] { 3, 3, 3, 3 };
+                jagged1[3] = new int[] { 4, 4 };
 
-                public Member(int id, string name, int tasks)
-                {
-                    ID = id; Name = name; Tasks = tasks;
-                }
+                Console.WriteLine("=== Fixed Jagged Array ===");
+                PrintJagged(jagged1);
 
-                public override string ToString()
-                {
-                    return $"ID: {ID}, Name: {Name}, Tasks: {Tasks}";
-                }
-            }
+                // Part 2: Create jagged array by user input
+                Console.Write("Enter number of rows: ");
+                int rows = int.Parse(Console.ReadLine());
+                int[][] jagged2 = new int[rows][];
 
-            static void Main(string[] args)
-            {
-                // Jagged array: 3 groups
-                Member[][] groups = new Member[3][];
-                groups[0] = new Member[5];
-                groups[1] = new Member[3];
-                groups[2] = new Member[6];
-
-                // Menu
-                int choice;
-                do
-                {
-                    Console.WriteLine("\n=== Company Menu ===");
-                    Console.WriteLine("1. Initialize members");
-                    Console.WriteLine("2. Print all members");
-                    Console.WriteLine("3. Search by ID");
-                    Console.WriteLine("4. Member with most tasks");
-                    Console.WriteLine("0. Exit");
-                    Console.Write("Choice: ");
-                    choice = int.Parse(Console.ReadLine());
-
-                    switch (choice)
-                    {
-                        case 1:
-                            Initialize(groups);
-                            break;
-                        case 2:
-                            PrintAll(groups);
-                            break;
-                        case 3:
-                            Console.Write("Enter ID to search: ");
-                            int id = int.Parse(Console.ReadLine());
-                            SearchByID(groups, id);
-                            break;
-                        case 4:
-                            PrintMaxTasks(groups);
-                            break;
-                    }
-                } while (choice != 0);
-            }
-
-            static void Initialize(Member[][] groups)
-            {
                 Random rand = new Random();
-                for (int i = 0; i < groups.Length; i++)
+                for (int i = 0; i < rows; i++)
                 {
-                    for (int j = 0; j < groups[i].Length; j++)
+                    Console.Write($"Enter number of columns for row {i}: ");
+                    int cols = int.Parse(Console.ReadLine());
+                    jagged2[i] = new int[cols];
+                    for (int j = 0; j < cols; j++)
                     {
-                        int id = i * 100 + j + 1;
-                        string name = $"Member_{i}{j}";
-                        int tasks = rand.Next(1, 50);
-                        groups[i][j] = new Member(id, name, tasks);
+                        jagged2[i][j] = rand.Next(1, 50); // random 1-50
                     }
                 }
-                Console.WriteLine("Members initialized!");
+
+                Console.WriteLine("\n=== Random Jagged Array ===");
+                PrintJagged(jagged2);
+
+                // 1. Biggest number of each row + whole array
+                Console.WriteLine("\nBiggest number in each row:");
+                int globalMax = int.MinValue;
+                for (int i = 0; i < jagged2.Length; i++)
+                {
+                    int rowMax = int.MinValue;
+                    foreach (int num in jagged2[i])
+                    {
+                        if (num > rowMax) rowMax = num;
+                        if (num > globalMax) globalMax = num;
+                    }
+                    Console.WriteLine($"Row {i}: {rowMax}");
+                }
+                Console.WriteLine($"Largest number in whole array: {globalMax}");
+
+                // 2. Sort ascending each row
+                Console.WriteLine("\nSorted rows:");
+                for (int i = 0; i < jagged2.Length; i++)
+                {
+                    Array.Sort(jagged2[i]);
+                }
+                PrintJagged(jagged2);
+
+                // 3. Print prime numbers
+                Console.WriteLine("\nPrime numbers:");
+                for (int i = 0; i < jagged2.Length; i++)
+                {
+                    foreach (int num in jagged2[i])
+                    {
+                        if (IsPrime(num)) Console.Write(num + " ");
+                    }
+                }
+                Console.WriteLine();
+
+                // 4. Search and print positions of a number
+                Console.Write("\nEnter number to search: ");
+                int target = int.Parse(Console.ReadLine());
+                Console.WriteLine($"Positions of {target}:");
+                for (int i = 0; i < jagged2.Length; i++)
+                {
+                    for (int j = 0; j < jagged2[i].Length; j++)
+                    {
+                        if (jagged2[i][j] == target)
+                            Console.WriteLine($"Found at row {i}, col {j}");
+                    }
+                }
             }
 
-            static void PrintAll(Member[][] groups)
+            // helper: print jagged array
+            static void PrintJagged(int[][] arr)
             {
-                for (int i = 0; i < groups.Length; i++)
+                for (int i = 0; i < arr.Length; i++)
                 {
-                    Console.WriteLine($"-- Group {i + 1} --");
-                    foreach (var m in groups[i])
-                    {
-                        Console.WriteLine(m);
-                    }
+                    Console.WriteLine(string.Join(" ", arr[i]));
                 }
             }
 
-            static void SearchByID(Member[][] groups, int id)
+            // helper: check prime
+            static bool IsPrime(int n)
             {
-                foreach (var group in groups)
-                {
-                    foreach (var m in group)
-                    {
-                        if (m.ID == id)
-                        {
-                            Console.WriteLine("Found: " + m);
-                            return;
-                        }
-                    }
-                }
-                Console.WriteLine("ID not found.");
-            }
-
-            static void PrintMaxTasks(Member[][] groups)
-            {
-                Member maxMember = groups[0][0];
-                foreach (var group in groups)
-                {
-                    foreach (var m in group)
-                    {
-                        if (m.Tasks > maxMember.Tasks) maxMember = m;
-                    }
-                }
-                Console.WriteLine("Member with most tasks: " + maxMember);
+                if (n < 2) return false;
+                for (int i = 2; i * i <= n; i++)
+                    if (n % i == 0) return false;
+                return true;
             }
         }
     }
